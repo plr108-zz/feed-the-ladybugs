@@ -91,7 +91,7 @@ var Engine = (function(global) {
      * render methods.
      */
     function updateEntities(dt) {
-        // This code is commented out until allEnemies is defined
+        // This code is disabled until allEnemies is defined
         /*
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
