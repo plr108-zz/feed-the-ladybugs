@@ -5,8 +5,12 @@ var Enemy = function() {
      
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
-    obj.x = 1;
-    obj.y = 1;
+    
+
+    // column multipler = 101, row multiplier = 83
+    obj.x = 0*101;
+    obj.y = 5*83-20;
+
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     obj.sprite = 'images/enemy-bug.png';
@@ -33,8 +37,10 @@ Enemy.prototype.render = function() {
 var Player = function() {
     var obj = Object.create(Player.prototype);
     obj.sprite = 'images/char-boy.png';
-    obj.x = 0;
-    obj.y = 0;
+    
+    // column multipler = 101, row multiplier = 83
+    obj.x = 2*101;
+    obj.y = 5*83-10;
     return obj;
 };
 
@@ -45,8 +51,37 @@ Player.prototype.render = function(dt) {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-Player.prototype.handleInput = function(input) {
-
+Player.prototype.handleInput = function(direction) {
+    switch(direction) {
+        case "up":
+            if(this.y - 83 + 10 >= 0) {
+                this.y = this.y - 83;
+            }
+            //console.log("y = " + this.y);
+            break;
+        case "down":
+            if(this.y <= 322) {
+                this.y = this.y + 83;
+            }
+            //console.log("y = " + this.y);
+            break;
+        case "left":
+            if(this.x > 0)
+            {
+                this.x = this.x - 101;
+            }
+            //console.log("x = " + this.x);
+            break;
+        case "right":
+            if(this.x < 404) {
+                this.x = this.x + 101;
+            }
+            console.log("x = " + this.x);
+            break;
+        default:
+            // do nothing
+    }
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
