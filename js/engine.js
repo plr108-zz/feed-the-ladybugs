@@ -149,11 +149,16 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
+
+        // I changed this to render the player first, then the enemies.
+        // This way the player appears below the enemy when they are drawn in the same space 
+        player.render();
+
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
 
-        player.render();
+        
     }
 
     /* This function does nothing but it could have been a good place to
