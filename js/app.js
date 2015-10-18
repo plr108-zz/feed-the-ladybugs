@@ -1,20 +1,56 @@
+// Udacity Front End Developer Nanodegree Project 3 Take 1
+// By: Patrick Roche 
+//     patrick.l.roche@gmail.com 
+//     https://github.com/plr108
+//
+// Note: I removed most of the default comments in app.js and engine.js for clarity.
+//       No other project files were modified in creating this project.  See the 
+//       README file for more info on setting up the game and gameplay. 
+//
 // Enemies our player must avoid
 // row determines what row the Enemy will appear on
 // delay determines the delay before Enemy appears on the screen
-var Enemy = function(row, delay, speed) {
+//
+//
+// Global Variables
+
+// column size in pixels
+var columnSize = 101;
+
+// row size in pixels
+var rowSize = 83;
+
+// The sprites must be offset by the specified number of
+// pixels in order to appear in the middle of the row 
+var enemySpriteYOffset = 20;
+var playerSpriteYOffset = 10;
+
+// collisionXOffset is used to account for the transparent
+// parts of the enemy and player sprites when checking fo 
+// a collision
+var collisionXOffset = 80;
+
+// playerSlideSpeedMultiplier affects how fast a player
+// leaves/enters the canvas after winning/losing
+var playerSlideSpeedMultiplier = 20;
+
+// Enemy constructor
+var Enemy = function(row, delay, speedMultiplier) {
     
     var obj = Object.create(Enemy.prototype);
      
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started    
+    // The enemy will start delay+1 columns to the 
+    // left of the canvas
+    obj.x = -delay*columnSize-columnSize;
     
-    // column multipler = 101, row multiplier = 83
-    obj.x = (delay*-1)*101-101;
-    obj.y = row*83-20;
-    obj.speed = speed;
+    // The enemy will start in the row specified by
+    // row.  The enemySpriteYOffset is accounted for
+    // so the enemy appears in the middle of the row.
+    obj.y = row*rowSize-enemySpriteYOffset;
 
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
+    // speedMultiplier will  be used to 
+    // increase enemy speed as the player levels up
+    obj.speedMultiplier = speedMultiplier;
     obj.sprite = 'images/enemy-bug.png';
 
     return obj;
@@ -23,51 +59,48 @@ var Enemy = function(row, delay, speed) {
 // Update the enemy's position, required method for game
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
+
     
     // if enemy is not well off of the right side of the canvas
-    if(this.x < 1000)
+    if(this.x < ctx.canvas.width * 1.2)
     {
-        // move enemy to the right
-        this.x = this.x + 200 * dt * this.speed;
+        // move enemy to the right by
+        // columnSize * speedMultiplier * dt
+        this.x = this.x + columnSize * this.speedMultiplier * dt;
     }
     else
     {
         // The enemy is off of the right side of the canvas.
         // Reset the x position so the enemy reappears on the left side
-        this.x = -110;
+        this.x = -columnSize;
     }
 
     // if the player is in the same row as the enemy, check for a collision
-    if(this.y === player.y - 10)
+    if(this.y === player.y - playerSpriteYOffset)
     {
         // check and see if the enemy and player collided.
-        // The offset accounts for the whitespace in the enemy and player sprites
-        if(Math.abs(player.x - this.x) < 80) {
+        // collisionXOffset accounts for the transparent parts
+        // of the enemy and player sprites.
+        if(Math.abs(player.x - this.x) < collisionXOffset) {
 
             // The player collided with the enemy and has lost
             player.losing = true;
 
             // now the enemy moves the player offscreen!
-            if(player.x < 700)
+            if(player.x < ctx.canvas.width * 1.1)
             {
-                player.x = this.x + 20;
+                player.x = this.x + playerSlideSpeedMultiplier;
             }
             else
             {
                 // place player on bottom row
-                player.y = 5*83-10;
+                player.y = 5*rowSize-playerSpriteYOffset;
             }
-        }
-        else {
-            // no collision, so do nothing
         }
     }
 };
 
-var TO_RADIANS = Math.PI/180; 
+
 
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
@@ -92,7 +125,7 @@ var Player = function() {
 
     // column multipler = 101, row multiplier = 83
     obj.x = 2*101;
-    obj.y = 5*83-10;
+    obj.y = 5*83-playerSpriteYOffset;
     return obj;
 };
 
@@ -112,7 +145,7 @@ Player.prototype.update = function(dt) {
             // increase the speed of the enemies and reset the player's position
             for(var i=0; i < allEnemies.length; i++)
             {
-                allEnemies[i].speed++;
+                allEnemies[i].speedMultiplier++;
             }
             this.y=5*83-10;
         }
@@ -214,6 +247,8 @@ Player.prototype.handleInput = function(direction) {
 };
 
 
+// This function is a modified version of the function presented
+// on this site: gamedev.stackexchange.com/questions/67274
 function drawRotatedImage(image, x, y, angle)
 { 
     // save the current coordinate system 
@@ -223,7 +258,7 @@ function drawRotatedImage(image, x, y, angle)
     ctx.translate(x+40, y+100);
 
     // convert angle from degrees to radians and rotate  
-    ctx.rotate(angle * TO_RADIANS);
+    ctx.rotate(angle * Math.PI/180);
 
     // draw it up and to the left by half the width
     // and height of the image 
@@ -238,6 +273,7 @@ function drawRotatedImage(image, x, y, angle)
 // Place the player object in a variable called player
 var allEnemies = [];
 allEnemies[0] = Enemy(3,0,1);
+/*
 allEnemies[1] = Enemy(2,1,.75);
 allEnemies[2] = Enemy(3,2,.5);
 allEnemies[3] = Enemy(1,5,1);
@@ -246,9 +282,9 @@ allEnemies[5] = Enemy(2,7,.5);
 allEnemies[6] = Enemy(2,8,1);
 allEnemies[7] = Enemy(1,11,.5);
 allEnemies[8] = Enemy(3,12,.75);
+*/
 
 var player = Player();
-
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
