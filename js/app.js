@@ -35,18 +35,33 @@ var collisionXOffset = 80;
 var playerSlideSpeedMultiplier = 20;
 
 // Enemy constructor
-var Enemy = function(row, delay, speedMultiplier) {
+var Enemy = function(row, delay, direction, speedMultiplier) {
     
     var obj = Object.create(Enemy.prototype);
-     
-    // The enemy will start delay+1 columns to the 
-    // left of the canvas
-    obj.x = -delay*columnSize-columnSize;
-    
+
     // The enemy will start in the row specified by
     // row.  The enemySpriteYOffset is accounted for
     // so the enemy appears in the middle of the row.
     obj.y = row*rowSize-enemySpriteYOffset;
+    
+    if(direction === 1)
+    {
+        // The enemy will start delay+1 columns to the 
+        // left side of the canvas
+        obj.x = -delay*columnSize-columnSize;
+        
+        // go left to right
+        obj.direction = 1;
+    }
+    else
+    {
+        // The enemy will start delay+1 columns to the 
+        // right side of the canvas
+        obj.x = delay*columnSize+5*columnSize;
+
+        // go right to left
+        obj.direction = -1
+    }
 
     // speedMultiplier will  be used to 
     // increase enemy speed as the player levels up
@@ -60,56 +75,120 @@ var Enemy = function(row, delay, speedMultiplier) {
 // Parameter: dt, a time delta between ticks
 Enemy.prototype.update = function(dt) {
 
-    
-    // if enemy is not well off of the right side of the canvas
-    if(this.x < ctx.canvas.width * 1.2)
-    {
-        // move enemy to the right by
-        // columnSize * speedMultiplier * dt
-        this.x = this.x + columnSize * this.speedMultiplier * dt;
-    }
-    else
-    {
-        // The enemy is off of the right side of the canvas.
-        // Reset the x position so the enemy reappears on the left side
-        this.x = -columnSize;
-    }
-
-    // if the player is in the same row as the enemy, check for a collision
-    if(this.y === player.y - playerSpriteYOffset)
-    {
-        // check and see if the enemy and player collided.
-        // collisionXOffset accounts for the transparent parts
-        // of the enemy and player sprites.
-        if(Math.abs(player.x - this.x) < collisionXOffset) {
-
-            // The player collided with the enemy and has lost
-            player.losing = true;
-
-            // now the enemy moves the player offscreen!
-            if(player.x < ctx.canvas.width * 1.1)
-            {
-                player.x = this.x + playerSlideSpeedMultiplier;
-            }
-            else
-            {
-                // place player on bottom row
-                player.y = 5*rowSize-playerSpriteYOffset;
-            }
+    // move the enemy
+    if(this.direction === 1) {
+        if(this.x < ctx.canvas.width * 1.2)
+        {
+            // move enemy to the right by
+            // columnSize * speedMultiplier * dt
+            this.x = this.x + columnSize * this.speedMultiplier * dt;
+        }
+        else
+        {
+            // The enemy is off of the side of the canvas.
+            // Reset the x position so the enemy reappears on the other side
+            this.x = -columnSize;
+        }
+    } 
+    else {
+        // if enemy is not well off of the side of the canvas
+        if(this.x > -ctx.canvas.width * 1.2)
+        {
+            // move enemy to the left by
+            // columnSize * speedMultiplier * dt
+            this.x = this.x - columnSize * this.speedMultiplier * dt;
+        }
+        else
+        {
+            // The enemy is off of the side of the canvas.
+            // Reset the x position so the enemy reappears on the other side
+            this.x = ctx.canvas.width+columnSize;
         }
     }
+
+    
+
+    // if the player is in the same row as the enemy, check for a collision
+    if(this.direction === 1) {
+        if(this.y === player.y - playerSpriteYOffset)
+        {
+            // check and see if the enemy and player collided.
+            // collisionXOffset accounts for the transparent parts
+            // of the enemy and player sprites.
+
+            // Pixels to bug nose: 98
+            // Piexels to bug end: 1
+            // Pixels to player start: 17
+            // Pixels to player end: 83
+            //if(Math.abs(player.x - this.x) < collisionXOffset) {
+            //temp = this.x-player.x;
+            //console.log("player.x: " + player.x + "\nthis.x: " + this.x + "\nthis.x-player.x: " + temp);    
+           if(player.x - this.x < (98-17) && player.x-this.x > (17-98)) {
+            
+                // The player collided with the enemy and has lost
+                player.losing = true;
+
+                // now the enemy moves the player offscreen!
+                if(player.x < ctx.canvas.width * 1.1)
+                {
+                    player.x = this.x + playerSlideSpeedMultiplier;
+                }
+                else
+                {
+                    // place player on bottom row
+                    player.y = 5*rowSize-playerSpriteYOffset;
+                }
+            }
+
+        }
+    } else {
+        if(this.y === player.y - playerSpriteYOffset)
+        {
+
+            // check and see if the enemy and player collided.
+            // collisionXOffset accounts for the transparent parts
+            // of the enemy and player sprites.
+
+
+            // Pixels to bug nose: 2
+            // Pixels to bug end: 99
+            // Pixels to player start: 17
+            // Pixels to player end: 83
+            if(this.x-player.x < (83+99) && this.x-player.x > (2+17)) {
+                
+                // The player collided with the enemy and has lost
+                player.losing = true;
+
+                // now the enemy moves the player offscreen!
+                if(player.x > ctx.canvas.width * 1.1)
+                {
+                    player.x = this.x - playerSlideSpeedMultiplier;
+                }
+                else
+                {
+                    // place player on bottom row
+                    player.y = 5*rowSize-playerSpriteYOffset;
+                }
+            }
+
+        } 
+    }
 };
-
-
 
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    if(this.direction === 1) {
+        // Enemy faces right
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    }    
+    else
+    {
+        // Enemy faces left
+        flipImage(Resources.get(this.sprite),this.x,this.y);
+    }
 };
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+// Player constructor
 var Player = function() {
     var obj = Object.create(Player.prototype);
     obj.sprite = 'images/char-boy.png';
@@ -173,6 +252,7 @@ Player.prototype.update = function(dt) {
     // if the player is off the right side of the canvas and just lost    
     // <START HERE> issue: player is stuck at x=691 after losing 
     if(this.y === 5*83-10 && player.losing === true) {
+
         // slide the player in from right 
         if (this.x > 2*101) {            
             if(this.x > 2*101+19) {
@@ -187,6 +267,7 @@ Player.prototype.update = function(dt) {
             }
         }
     }
+    
 };
 
 Player.prototype.render = function(dt) {    
@@ -246,11 +327,9 @@ Player.prototype.handleInput = function(direction) {
     }
 };
 
-
 // This function is a modified version of the function presented
 // on this site: gamedev.stackexchange.com/questions/67274
-function drawRotatedImage(image, x, y, angle)
-{ 
+function drawRotatedImage(image, x, y, angle) { 
     // save the current coordinate system 
     ctx.save(); 
 
@@ -268,21 +347,45 @@ function drawRotatedImage(image, x, y, angle)
     ctx.restore(); 
 }
 
+// flip image horizontally
+function flipImage(image,x,y) {
+    // save the current coordinate system 
+    ctx.save(); 
+
+    // Translate so player is in middle of board square
+    //ctx.translate(x+40, y+100);
+
+    // convert angle from degrees to radians and rotate  
+    //ctx.rotate(angle * Math.PI/180);
+
+    // draw it up and to the left by half the width
+    // and height of the image 
+    //ctx.drawImage(image, -(image.width/2), -(image.height/2));
+    ctx.scale(-1,1);
+    ctx.drawImage(image,-x,y);
+    ctx.restore();    
+
+    // restore original coordinate system
+    
+}
+
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 var allEnemies = [];
-allEnemies[0] = Enemy(3,0,1);
-/*
-allEnemies[1] = Enemy(2,1,.75);
-allEnemies[2] = Enemy(3,2,.5);
-allEnemies[3] = Enemy(1,5,1);
-allEnemies[4] = Enemy(3,6,1);
-allEnemies[5] = Enemy(2,7,.5);
-allEnemies[6] = Enemy(2,8,1);
-allEnemies[7] = Enemy(1,11,.5);
-allEnemies[8] = Enemy(3,12,.75);
-*/
+
+//Enemy parameters: row, delay, direction, speedMultiplier
+// Row is a random integer betwen 1 and 3
+
+allEnemies[0] = Enemy(1, 0, -1, 1);
+allEnemies[1] = Enemy(2, 0, 1, 1);
+allEnemies[2] = Enemy(3, 0, -1, 1);
+allEnemies[3] = Enemy(1, 3, -1, 1);
+allEnemies[4] = Enemy(2, 3, 1, 1);
+allEnemies[5] = Enemy(3, 3, -1, 1);
+allEnemies[6] = Enemy(1, 6, -1, 1);
+allEnemies[7] = Enemy(2, 6, 1, 1);
+allEnemies[8] = Enemy(3, 6, -1, 1);
 
 var player = Player();
 
