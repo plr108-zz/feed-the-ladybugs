@@ -157,8 +157,14 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
-
-        
+        // Display gameMessage
+        ctx.textAlign = 'center';
+        ctx.font = "64px impact";
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+        ctx.fillText(gameMessage,ctx.canvas.width / 2,ctx.canvas.height * .6);
+        ctx.strokeText(gameMessage,ctx.canvas.width / 2,ctx.canvas.height * .6);
     }
 
     /* This function does nothing but it could have been a good place to

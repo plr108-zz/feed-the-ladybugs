@@ -25,14 +25,25 @@ var rowSize = 83;
 var enemySpriteYOffset = 20;
 var playerSpriteYOffset = 10;
 
-// collisionXOffset is used to account for the transparent
-// parts of the enemy and player sprites when checking fo 
-// a collision
-var collisionXOffset = 80;
+// These variables are used to account for the transparent
+// parts of the enemy and player sprites when checking for 
+// a collision.  For example: the left side of the enemy starts
+// on pixel column 1 of the sprite and ends on pixel column 98. 
+var enemyLeftSide = 1;
+var enemyRightSide = 98;
+var playerLeftSide = 17;
+var playerRightSide = 83;
 
 // playerSlideSpeedMultiplier affects how fast a player
 // leaves/enters the canvas after winning/losing
 var playerSlideSpeedMultiplier = 20;
+
+// gameMessage is used to display text to user
+// after wining or losing!
+var gameMessage = "";
+
+// losses is incremented every time the player loses.
+var losses = 0;
 
 // Enemy constructor
 var Enemy = function(row, delay, direction, speedMultiplier) {
@@ -46,7 +57,7 @@ var Enemy = function(row, delay, direction, speedMultiplier) {
     
     if(direction === 1)
     {
-        // The enemy will start delay+1 columns to the 
+        // The enemy will start delay-1 columns to the 
         // left side of the canvas
         obj.x = -delay*columnSize-columnSize;
         
@@ -57,16 +68,19 @@ var Enemy = function(row, delay, direction, speedMultiplier) {
     {
         // The enemy will start delay+1 columns to the 
         // right side of the canvas
-        obj.x = delay*columnSize+5*columnSize;
+        obj.x = delay*columnSize+6*columnSize;
 
         // go right to left
         obj.direction = -1
     }
 
-    // speedMultiplier will  be used to 
+    // speedMultiplier will be used to 
     // increase enemy speed as the player levels up
     obj.speedMultiplier = speedMultiplier;
     obj.sprite = 'images/enemy-bug.png';
+
+    // delay is saved for use when the object is updated
+    obj.delay = delay;
 
     return obj;
 };
@@ -77,7 +91,7 @@ Enemy.prototype.update = function(dt) {
 
     // move the enemy
     if(this.direction === 1) {
-        if(this.x < ctx.canvas.width * 1.2)
+        if(this.x < ctx.canvas.width)
         {
             // move enemy to the right by
             // columnSize * speedMultiplier * dt
@@ -87,12 +101,12 @@ Enemy.prototype.update = function(dt) {
         {
             // The enemy is off of the side of the canvas.
             // Reset the x position so the enemy reappears on the other side
-            this.x = -columnSize;
+            this.x = -this.delay*columnSize-columnSize;
         }
     } 
     else {
-        // if enemy is not well off of the side of the canvas
-        if(this.x > -ctx.canvas.width * 1.2)
+        // if enemy is not off of the side of the canvas
+        if(this.x > 0)
         {
             // move enemy to the left by
             // columnSize * speedMultiplier * dt
@@ -102,36 +116,25 @@ Enemy.prototype.update = function(dt) {
         {
             // The enemy is off of the side of the canvas.
             // Reset the x position so the enemy reappears on the other side
-            this.x = ctx.canvas.width+columnSize;
+            this.x = this.delay*columnSize+6*columnSize;
         }
     }
-
-    
 
     // if the player is in the same row as the enemy, check for a collision
     if(this.direction === 1) {
         if(this.y === player.y - playerSpriteYOffset)
         {
             // check and see if the enemy and player collided.
-            // collisionXOffset accounts for the transparent parts
-            // of the enemy and player sprites.
-
-            // Pixels to bug nose: 98
-            // Piexels to bug end: 1
-            // Pixels to player start: 17
-            // Pixels to player end: 83
-            //if(Math.abs(player.x - this.x) < collisionXOffset) {
-            //temp = this.x-player.x;
-            //console.log("player.x: " + player.x + "\nthis.x: " + this.x + "\nthis.x-player.x: " + temp);    
-           if(player.x - this.x < (98-17) && player.x-this.x > (17-98)) {
+           if(player.x - this.x < (enemyRightSide-playerLeftSide) && player.x-this.x > (playerLeftSide-enemyRightSide)) {
             
                 // The player collided with the enemy and has lost
                 player.losing = true;
+                player.slideDirection = this.direction;
 
                 // now the enemy moves the player offscreen!
-                if(player.x < ctx.canvas.width * 1.1)
+                if(player.x < ctx.canvas.width)
                 {
-                    player.x = this.x + playerSlideSpeedMultiplier;
+                    player.x = this.x + 20;
                 }
                 else
                 {
@@ -144,25 +147,17 @@ Enemy.prototype.update = function(dt) {
     } else {
         if(this.y === player.y - playerSpriteYOffset)
         {
-
             // check and see if the enemy and player collided.
-            // collisionXOffset accounts for the transparent parts
-            // of the enemy and player sprites.
-
-
-            // Pixels to bug nose: 2
-            // Pixels to bug end: 99
-            // Pixels to player start: 17
-            // Pixels to player end: 83
-            if(this.x-player.x < (83+99) && this.x-player.x > (2+17)) {
+            if(this.x-player.x < (playerRightSide+enemyRightSide) && this.x-player.x > (enemyLeftSide+playerLeftSide)) {
                 
                 // The player collided with the enemy and has lost
                 player.losing = true;
+                player.slideDirection = this.direction;
 
                 // now the enemy moves the player offscreen!
-                if(player.x > ctx.canvas.width * 1.1)
+                if(player.x > -playerRightSide )
                 {
-                    player.x = this.x - playerSlideSpeedMultiplier;
+                    player.x = this.x - 99;
                 }
                 else
                 {
@@ -196,11 +191,17 @@ var Player = function() {
     // winning is set to true true when player has won the level
     obj.winning = false;
 
-    //losing is set to true true when player has lost the level
+    // losing is set to true true when player has lost the level
     obj.losing = false;
 
     // level is incremented every time a player makes it to the water
-    obj.level = 0;
+    obj.level = 1;
+
+    // slideDirection determines which way player slides offscreen after losing
+    // -1: player must slide in from left
+    //  0: no slide direction specified
+    //  1: player must slide in from right
+    obj.slideDirection = 0;
 
     // column multipler = 101, row multiplier = 83
     obj.x = 2*101;
@@ -212,8 +213,8 @@ Player.prototype.update = function(dt) {
     if(this.y === -10) {
         // The player has reached the water and wins the level
         // increase the difficulty level
-        this.level++;
         this.winning=true;
+        
 
         // Slide the player offscreen to the left
         if (this.x > -110) {
@@ -224,14 +225,16 @@ Player.prototype.update = function(dt) {
             // increase the speed of the enemies and reset the player's position
             for(var i=0; i < allEnemies.length; i++)
             {
-                allEnemies[i].speedMultiplier++;
+                allEnemies[i].speedMultiplier = allEnemies[i].speedMultiplier*1.1;
             }
+
             this.y=5*83-10;
         }
     }
 
-    // if the player is in the bottom row and just won    
-    if(this.y === 5*83-10 && player.winning === true) {
+    // if the player is in the bottom row and just won 
+    // OR player just lost and slideDirection is 'left'
+    if(this.y === 5*83-10 && (player.winning === true || player.slideDirection === -1)) {
 
         // slide the player in from left 
         if (this.x < 2*101) {
@@ -249,9 +252,7 @@ Player.prototype.update = function(dt) {
         }
     }
 
-    // if the player is off the right side of the canvas and just lost    
-    // <START HERE> issue: player is stuck at x=691 after losing 
-    if(this.y === 5*83-10 && player.losing === true) {
+    if(this.y === 5*83-10 && player.slideDirection === 1) {
 
         // slide the player in from right 
         if (this.x > 2*101) {            
@@ -276,15 +277,36 @@ Player.prototype.render = function(dt) {
     }
     else
     {
-        drawRotatedImage(Resources.get(this.sprite), this.x, this.y, 270);
+        if(player.slideDirection === -1) {
+            drawRotatedImage(Resources.get(this.sprite), this.x, this.y, 90);
+        } else {
+            drawRotatedImage(Resources.get(this.sprite), this.x, this.y, 270);
+        }
     }
 };
 
 Player.prototype.resetPosition = function(dt) {    
+    if(this.winning === true) {
+        this.level++;
+        gameMessage = "LEVEL UP!  Level: " + this.level;
+    }
+
+    if(this.losing === true) {
+        losses++;
+        if(losses === 1)
+        {
+            gameMessage = "TRY AGAIN.";    
+        } 
+        else
+        {       
+            gameMessage = losses + " LADYBUGS FED!";
+        }
+    }
 
     this.y = 5*83-10;    
     this.winning = false;
     this.losing = false;    
+    this.slideDirection = 0;
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
@@ -297,27 +319,25 @@ Player.prototype.handleInput = function(direction) {
             case "up":
                 if(this.y - 83 + 10 >= 0) {
                     this.y = this.y - 83;
+                    // reset gameMessage
+                    gameMessage = "";
                 }
-                //console.log("y = " + this.y);
                 break;
             case "down":
                 if(this.y <= 322) {
                     this.y = this.y + 83;
                 }
-                //console.log("y = " + this.y);
-                    break;
+                break;
             case "left":
                 if(this.x > 0)
                 {
                     this.x = this.x - 101;
                 }
-                //console.log("x = " + this.x);
                 break;
             case "right":
                 if(this.x < 404) {
                     this.x = this.x + 101;
                 }
-                //console.log("x = " + this.x);
                 break;
             default:
                 // do nothing
@@ -351,22 +371,10 @@ function drawRotatedImage(image, x, y, angle) {
 function flipImage(image,x,y) {
     // save the current coordinate system 
     ctx.save(); 
-
-    // Translate so player is in middle of board square
-    //ctx.translate(x+40, y+100);
-
-    // convert angle from degrees to radians and rotate  
-    //ctx.rotate(angle * Math.PI/180);
-
-    // draw it up and to the left by half the width
-    // and height of the image 
-    //ctx.drawImage(image, -(image.width/2), -(image.height/2));
     ctx.scale(-1,1);
     ctx.drawImage(image,-x,y);
-    ctx.restore();    
-
     // restore original coordinate system
-    
+    ctx.restore();    
 }
 
 // Now instantiate your objects.
@@ -375,17 +383,13 @@ function flipImage(image,x,y) {
 var allEnemies = [];
 
 //Enemy parameters: row, delay, direction, speedMultiplier
-// Row is a random integer betwen 1 and 3
-
-allEnemies[0] = Enemy(1, 0, -1, 1);
-allEnemies[1] = Enemy(2, 0, 1, 1);
-allEnemies[2] = Enemy(3, 0, -1, 1);
-allEnemies[3] = Enemy(1, 3, -1, 1);
-allEnemies[4] = Enemy(2, 3, 1, 1);
-allEnemies[5] = Enemy(3, 3, -1, 1);
-allEnemies[6] = Enemy(1, 6, -1, 1);
-allEnemies[7] = Enemy(2, 6, 1, 1);
-allEnemies[8] = Enemy(3, 6, -1, 1);
+// Row is an integer betwen 1 and 3
+allEnemies[0] = Enemy(1,   0, -1, .75 + Math.random()/4);
+allEnemies[1] = Enemy(2,   0,  1, .75 + Math.random()/4);
+allEnemies[2] = Enemy(3,   0, -1, .75 + Math.random()/4);
+allEnemies[3] = Enemy(1, 2.5, -1, .75 + Math.random()/4);
+allEnemies[4] = Enemy(2, 2.5,  1, .75 + Math.random()/4);
+allEnemies[5] = Enemy(3, 2.5, -1, .75 + Math.random()/4);
 
 var player = Player();
 
@@ -401,3 +405,4 @@ document.addEventListener('keyup', function(e) {
 
     player.handleInput(allowedKeys[e.keyCode]);
 });
+
