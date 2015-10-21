@@ -159,12 +159,40 @@ var Engine = (function(global) {
         });
         // Display gameMessage
         ctx.textAlign = 'center';
-        ctx.font = "64px impact";
+        ctx.font = "64px Impact";
         ctx.fillStyle = "white";
         ctx.strokeStyle = "black";
         ctx.lineWidth = 3;
         ctx.fillText(gameMessage,ctx.canvas.width / 2,ctx.canvas.height * .6);
         ctx.strokeText(gameMessage,ctx.canvas.width / 2,ctx.canvas.height * .6);
+
+        // Display Lives Remaining
+        ctx.textAlign = 'left';
+        ctx.font = "24px Impact";
+        lives = player.level - player.losses + 1;
+        if(lives === 0){
+            ctx.fillStyle = "red";    
+        }
+        else if(lives === 1)
+        {
+            ctx.fillStyle = "yellow";
+        } else {
+            ctx.fillStyle = "white";
+        }
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        
+        ctx.fillText("LIVES: " + lives,10,ctx.canvas.height-30);
+        ctx.strokeText("LIVES: " + lives,10,ctx.canvas.height-30);
+
+        // Display Level
+        ctx.textAlign = 'right';
+        ctx.font = "24px Impact";
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        ctx.fillText("LEVEL " + player.level,ctx.canvas.width-10,ctx.canvas.height-30);
+        ctx.strokeText("LEVEL " + player.level,ctx.canvas.width-10,ctx.canvas.height-30);
     }
 
     /* This function does nothing but it could have been a good place to

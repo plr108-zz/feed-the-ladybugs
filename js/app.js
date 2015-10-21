@@ -42,8 +42,7 @@ var playerSlideSpeedMultiplier = 20;
 // after wining or losing!
 var gameMessage = "";
 
-// losses is incremented every time the player loses.
-var losses = 0;
+var gameOver = false;
 
 // Enemy constructor
 var Enemy = function(row, delay, direction, speedMultiplier) {
@@ -129,6 +128,7 @@ Enemy.prototype.update = function(dt) {
             
                 // The player collided with the enemy and has lost
                 player.losing = true;
+                
                 player.slideDirection = this.direction;
 
                 // now the enemy moves the player offscreen!
@@ -152,6 +152,7 @@ Enemy.prototype.update = function(dt) {
                 
                 // The player collided with the enemy and has lost
                 player.losing = true;
+                
                 player.slideDirection = this.direction;
 
                 // now the enemy moves the player offscreen!
@@ -196,6 +197,9 @@ var Player = function() {
 
     // level is incremented every time a player makes it to the water
     obj.level = 1;
+    
+    // losses is incremented every time the player loses.
+    obj.losses = 0;
 
     // slideDirection determines which way player slides offscreen after losing
     // -1: player must slide in from left
@@ -214,8 +218,8 @@ Player.prototype.update = function(dt) {
         // The player has reached the water and wins the level
         // increase the difficulty level
         this.winning=true;
+        this.slideDirection=-1;
         
-
         // Slide the player offscreen to the left
         if (this.x > -110) {
             this.x = (this.x - 10);
@@ -227,48 +231,59 @@ Player.prototype.update = function(dt) {
             {
                 allEnemies[i].speedMultiplier = allEnemies[i].speedMultiplier*1.1;
             }
-
+            
             this.y=5*83-10;
         }
     }
 
     // if the player is in the bottom row and just won 
     // OR player just lost and slideDirection is 'left'
-    if(this.y === 5*83-10 && (player.winning === true || player.slideDirection === -1)) {
+    if(this.y === 5*83-10 && (this.winning === true || this.slideDirection === -1)) {
 
-        // slide the player in from left 
-        if (this.x < 2*101) {
-            
-            if(this.x < 2*101-19) {
-                // move player a little closer to starting point
-                this.x = (this.x + 10);
+        if(this.losses <= this.level) {
+            // slide the player in from left 
+            if (this.x < 2*101) {
+                
+                if(this.x < 2*101-19) {
+                    // move player a little closer to starting point
+                    this.x = (this.x + 10);
+                }
+                else
+                {
+                    //if we are really close, set player's position to starting point 
+                    this.x = 2*101;
+                    this.resetPosition();
+                }
             }
-            else
-            {
-                //if we are really close, set player's position to starting point 
-                this.x = 2*101;
-                player.resetPosition();
-            }
+        } else {
+            // Game Over
+            this.resetPosition();
         }
     }
 
-    if(this.y === 5*83-10 && player.slideDirection === 1) {
+    if(this.y === 5*83-10 && this.slideDirection === 1) {
 
-        // slide the player in from right 
-        if (this.x > 2*101) {            
-            if(this.x > 2*101+19) {
-                // move player a little closer to starting point
-                this.x = (this.x - 10);
-            }
-            else
-            {
-                //if we are really close, set player's position to starting point 
-                this.x = 2*101;
-                player.resetPosition();
+        // if the game is not over
+        if(this.losses <= this.level){
+            // slide the player in from right 
+            if (this.x > 2*101) {            
+                if(this.x > 2*101+19) {
+                    // move player a little closer to starting point
+                    this.x = (this.x - 10);
+                }
+                else
+                {
+                    //if we are really close, set player's position to starting point 
+                    this.x = 2*101;
+                    this.resetPosition();
+                }
             }
         }
+        else if(this.losing === true){
+            // Game Over
+            this.resetPosition();
+        }
     }
-    
 };
 
 Player.prototype.render = function(dt) {    
@@ -277,7 +292,7 @@ Player.prototype.render = function(dt) {
     }
     else
     {
-        if(player.slideDirection === -1) {
+        if(this.slideDirection === -1) {
             drawRotatedImage(Resources.get(this.sprite), this.x, this.y, 90);
         } else {
             drawRotatedImage(Resources.get(this.sprite), this.x, this.y, 270);
@@ -292,14 +307,23 @@ Player.prototype.resetPosition = function(dt) {
     }
 
     if(this.losing === true) {
-        losses++;
-        if(losses === 1)
-        {
-            gameMessage = "TRY AGAIN.";    
-        } 
-        else
-        {       
-            gameMessage = losses + " LADYBUGS FED!";
+        this.losses++;
+        if(this.losses > this.level) {
+            gameOver = true;
+            gameMessage = "GAME OVER.";   
+        }
+        else{
+            if(this.losses === 1)
+            {
+                gameMessage = "TRY AGAIN.";    
+            } 
+            else if(this.losses === this.level)
+            {
+                gameMessage = "DON'T LOSE AGAIN!";
+            } else
+            {       
+                gameMessage = this.losses + " LADYBUGS FED!";
+            }
         }
     }
 
@@ -310,11 +334,10 @@ Player.prototype.resetPosition = function(dt) {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-
 Player.prototype.handleInput = function(direction) {
 
-    // only handle input if the player has not won or lost yet
-    if(this.losing === false && this.winning === false){
+    // only handle input if the game is over or player has not won or lost the level yet
+    if(this.losing === false && this.winning === false && gameOver === false){
         switch(direction) {
             case "up":
                 if(this.y - 83 + 10 >= 0) {
@@ -405,4 +428,3 @@ document.addEventListener('keyup', function(e) {
 
     player.handleInput(allowedKeys[e.keyCode]);
 });
-
