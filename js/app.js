@@ -1,4 +1,4 @@
-// Udacity Front End Developer Nanodegree Project 3 Take 1
+// Udacity Front End Developer Nanodegree Project 3 Take 2
 // By: Patrick Roche
 //     patrick.l.roche@gmail.com
 //     https://github.com/plr108
@@ -6,7 +6,8 @@
 // Note: I removed most of the default comments in app.js and engine.js for clarity.
 //       No other project files were modified in creating this project.  See the
 //       README file for more info on setting up the game and gameplay.
-//
+//       Code reformatted after Udacity sumbission to meet Udacity style rules.
+//       No code functionality has been changed in Take 2.
 
 // constructor for Game object.
 // Used to store values about the game.
@@ -52,13 +53,13 @@ var Enemy = function(row, delay, direction, speedMultiplier) {
     // The enemy will start in row specified by the row parameter
     // The spriteYOffset is accounted for so the enemy
     // appears in the middle of the row.
-    obj.y = row*game.rowSize-obj.spriteYOffset;
+    obj.y = row * game.rowSize - obj.spriteYOffset;
 
     // if enemy moving left to right
     if(direction === 1) {
         // The enemy will start delay-1 columns to the
         // left side of the canvas
-        obj.x = -delay*game.columnSize-game.columnSize;
+        obj.x = -delay * game.columnSize-game.columnSize;
 
         // go left to right
         obj.direction = 1;
@@ -66,10 +67,10 @@ var Enemy = function(row, delay, direction, speedMultiplier) {
     else {
         // The enemy will start delay+1 columns to the
         // right side of the canvas
-        obj.x = delay*game.columnSize+(game.columns+1)*game.columnSize;
+        obj.x = delay * game.columnSize + (game.columns + 1) * game.columnSize;
 
         // go right to left
-        obj.direction = -1
+        obj.direction = -1;
     }
 
     // speedMultiplier will be used to
@@ -102,7 +103,7 @@ Enemy.prototype.update = function(dt) {
             // The enemy is off of the right side of the canvas.
             // Reset the x position so the enemy is delay-1 columns
             // to the left of the canvas.
-            this.x = -this.delay*game.columnSize-game.columnSize;
+            this.x = -this.delay * game.columnSize - game.columnSize;
         }
     }
     // else enemy is moving right to left
@@ -117,7 +118,7 @@ Enemy.prototype.update = function(dt) {
             // The enemy is off of the left side of the canvas.
             // Reset the x position so the starts delay+1 colums
             // to the right of the canvas
-            this.x = this.delay*game.columnSize+(game.columns+1)*game.columnSize;
+            this.x = this.delay * game.columnSize + (game.columns + 1) * game.columnSize;
         }
     }
 
@@ -128,7 +129,7 @@ Enemy.prototype.update = function(dt) {
         if(this.y === player.y - player.spriteYOffset) {
             // Check and see if the enemy and player collided.
             // if the x values of player and the enemy indicate the player and enemy are colliding
-           if(player.x - this.x < (this.rightSide-player.leftSide) && player.x - this.x > (player.leftSide-this.rightSide)) {
+           if(player.x - this.x < (this.rightSide-player.leftSide) && player.x - this.x > (player.leftSide - this.rightSide)) {
 
                 // The player collided with the enemy and has lost the level
                 player.lostLevel = true;
@@ -143,7 +144,7 @@ Enemy.prototype.update = function(dt) {
                 }
                 else {
                     // after the player is offscreen, place player on bottom row
-                    player.y = game.rows*game.rowSize-player.spriteYOffset;
+                    player.y = game.rows * game.rowSize-player.spriteYOffset;
                 }
             }
         }
@@ -153,7 +154,7 @@ Enemy.prototype.update = function(dt) {
         if(this.y === player.y - player.spriteYOffset) {
             // Check and see if the enemy and player collided.
             // if the x values of player and the enemy indicate the player and enemy are colliding
-            if(this.x-player.x < (player.rightSide+this.rightSide) && this.x-player.x > (this.leftSide+player.leftSide)) {
+            if(this.x - player.x < (player.rightSide + this.rightSide) && this.x - player.x > (this.leftSide + player.leftSide)) {
 
                 // The player collided with the enemy and has lost the level
                 player.lostLevel = true;
@@ -168,7 +169,7 @@ Enemy.prototype.update = function(dt) {
                 }
                 else {
                     // after the player is offscreen, place player on bottom row
-                    player.y = game.rows*game.rowSize-player.spriteYOffset;
+                    player.y = game.rows * game.rowSize - player.spriteYOffset;
                 }
             }
         }
@@ -232,20 +233,20 @@ var Player = function() {
     obj.lives = 2;
 
     // player starts in the third column
-    obj.x = 2*game.columnSize;
+    obj.x = 2 * game.columnSize;
 
     // player starts on the bottom row
-    obj.y = game.rows*game.rowSize-obj.spriteYOffset;
+    obj.y = game.rows * game.rowSize - obj.spriteYOffset;
     return obj;
 };
 
 Player.prototype.update = function(dt) {
     if(this.y === -10) {
         // The player has reached the water and wins the level
-        this.wonLevel=true;
+        this.wonLevel = true;
 
         // set slide direction to the left
-        this.slideDirection=-1;
+        this.slideDirection = -1;
 
         // Slide the player offscreen to the left
         if (this.x > -110) {
@@ -253,33 +254,33 @@ Player.prototype.update = function(dt) {
         }
         else {
             // increase the speed of the enemies and reset the player's position
-            for(var i=0; i < allEnemies.length; i++) {
-                allEnemies[i].speedMultiplier = allEnemies[i].speedMultiplier*1.1;
+            for(var i = 0; i < allEnemies.length; i++) {
+                allEnemies[i].speedMultiplier = allEnemies[i].speedMultiplier * 1.1;
             }
 
             // after the player is offscreen, place player on bottom row
-            this.y=game.rows*game.rowSize-this.spriteYOffset;
+            this.y = game.rows * game.rowSize-this.spriteYOffset;
         }
     }
 
     // if the player is in the bottom row and just won
     // OR player just lost and slideDirection is 'left'
-    if(this.y === game.rows*game.rowSize-10 && (this.wonLevel === true || this.slideDirection === -1)) {
+    if(this.y === game.rows * game.rowSize - 10 && (this.wonLevel === true || this.slideDirection === -1)) {
 
         // if the game is not about to be over
         if(this.lives > 1 || this.wonLevel === true) {
 
             // slide the player in from left
-            if (this.x < 2*game.columnSize) {
+            if (this.x < 2 * game.columnSize) {
 
                 // move player a little closer to starting point
-                if(this.x < 2*game.columnSize-19) {
+                if(this.x < 2 * game.columnSize - 19) {
                     this.x = (this.x + 10);
                 }
                 else {
                     // if player is really close to starting point,
                     // set player's position to starting point
-                    this.x = 2*game.columnSize;
+                    this.x = 2 * game.columnSize;
                     this.resetPosition();
                 }
             }
@@ -290,13 +291,13 @@ Player.prototype.update = function(dt) {
         }
     }
 
-    if(this.y === game.rows*game.rowSize-10 && (this.wonLevel === true || this.slideDirection === 1)) {
+    if(this.y === game.rows * game.rowSize - 10 && (this.wonLevel === true || this.slideDirection === 1)) {
 
         // if the game is not about to be over
         if(this.lives > 1 || this.wonLevel === true) {
             // slide the player in from right
-            if (this.x > 2*game.columnSize) {
-                if(this.x > 2*game.columnSize+19) {
+            if (this.x > 2 * game.columnSize) {
+                if(this.x > 2 * game.columnSize + 19) {
                     // move player a little closer to starting point
                     this.x = (this.x - 10);
                 }
@@ -363,8 +364,8 @@ Player.prototype.resetPosition = function(dt) {
 
     // keep player location offscreen if the game is over
     if(!player.gameOver) {
-        this.x = 2*game.columnSize;
-        this.y = game.rows*game.rowSize-10;
+        this.x = 2 * game.columnSize;
+        this.y = game.rows * game.rowSize - 10;
     }
 };
 
@@ -416,14 +417,14 @@ Player.prototype.drawRotatedSprite = function (image, x, y, angle) {
     ctx.save();
 
     // Translate so player is in middle of board square
-    ctx.translate(x+40, y+100);
+    ctx.translate(x + 40, y + 100);
 
     // convert angle from degrees to radians and rotate
-    ctx.rotate(angle * Math.PI/180);
+    ctx.rotate(angle * Math.PI / 180);
 
     // draw sprite up and to the left by half the width
     // and height of the sprite
-    ctx.drawImage(image, -(image.width/2), -(image.height/2));
+    ctx.drawImage(image, -(image.width / 2), -(image.height / 2));
 
     // restore original coordinate system
     ctx.restore();
@@ -443,12 +444,12 @@ var allEnemies = [];
 // The enemy will be drawn delay+1 columns offscreen of the canvas.
 // Direction is -1 for right to left movement, 1 for left to right movement.
 // speedMultiplier is a random speed between .75 and 1
-allEnemies[0] = Enemy(1,   0, -1, .75 + Math.random()/4);
-allEnemies[1] = Enemy(2,   0,  1, .75 + Math.random()/4);
-allEnemies[2] = Enemy(3,   0, -1, .75 + Math.random()/4);
-allEnemies[3] = Enemy(1, 2.5, -1, .75 + Math.random()/4);
-allEnemies[4] = Enemy(2, 2.5,  1, .75 + Math.random()/4);
-allEnemies[5] = Enemy(3, 2.5, -1, .75 + Math.random()/4);
+allEnemies[0] = Enemy(1,   0, -1, .75 + Math.random() / 4);
+allEnemies[1] = Enemy(2,   0,  1, .75 + Math.random() / 4);
+allEnemies[2] = Enemy(3,   0, -1, .75 + Math.random() / 4);
+allEnemies[3] = Enemy(1, 2.5, -1, .75 + Math.random() / 4);
+allEnemies[4] = Enemy(2, 2.5,  1, .75 + Math.random() / 4);
+allEnemies[5] = Enemy(3, 2.5, -1, .75 + Math.random() / 4);
 
 // create player object
 var player = Player();
